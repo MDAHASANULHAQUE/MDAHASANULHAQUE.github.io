@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>Secure multi-tier deployment on AWS – Ahasanul Haque</title>
+  <meta name="description" content="Case study: deploying a web app to AWS with Terraform, Ansible and GitHub Actions, and reviewing its security.">
+</head>
+<body>
+  <article class="case">
+    <a class="back" href="index.html">Back to all projects</a>
+
+    <header>
+      <h1>Secure multi-tier deployment on AWS</h1>
+      <p class="lede">Deploying a web app and its database to AWS entirely from code, then reviewing my own setup for security weaknesses.</p>
+      <dl class="facts">
+        <dt>Type</dt><dd>RMIT coursework (DevOps), individual</dd>
+        <dt>Year</dt><dd>2026</dd>
+        <dt>Tools</dt><dd>Terraform, AWS (EC2, VPC, Application Load Balancers, S3), Ansible, Docker, GitHub Actions, Bash, PostgreSQL</dd>
+      </dl>
+    </header>
+
+    <section>
+      <h2>The problem</h2>
+      <p>The app had a frontend, a backend and a Postgres database. Setting this up by hand in the AWS console is slow, easy to get wrong, and hard to repeat. The goal was to build the whole environment from code so it could be created, changed and destroyed reliably, without exposing the database or the servers to the internet.</p>
+    </section>
+
+    <section>
+      <h2>Objectives</h2>
+      <ul>
+        <li>Create all AWS infrastructure with Terraform, with no manual console changes.</li>
+        <li>Keep the database and backend away from direct internet access.</li>
+        <li>Run the frontend and backend across two availability zones so one zone failing doesn’t take them down.</li>
+        <li>Deploy automatically from GitHub without putting credentials in the code.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>How I built it</h2>
+      <ol>
+        <li><strong>Built it in stages.</strong> I started with the backend and database on one EC2 instance, added the frontend, then moved each container onto its own server, and finally scaled out with load balancers. Each stage is saved as a git tag (<code>section-a</code> to <code>section-c</code>).</li>
+        <li><strong>Network.</strong> Terraform created a VPC, two public subnets in different availability zones (an Application Load Balancer needs at least two), an internet gateway, a route table and security groups. The Ubuntu 24.04 AMI is looked up with a Terraform data block instead of being hard-coded.</li>
+        <li><strong>Servers and load balancers.</strong> Five t3.micro EC2 instances: two frontends and two backends (one of each pair in each zone) and one database. A public Application Load Balancer on port 80 sends traffic to the frontends, and an internal one (<code>internal = true</code>) on port 8080 sends traffic to the backends. Each load balancer health-checks <code>/</code> and stops sending traffic to a server that stops answering.</li>
+        <li><strong>Locking down traffic.</strong> Every tier has its own security group, and each one only allows the security group in front of it: frontend servers only accept 8081 from the frontend load balancer, backend servers only accept 8080 from the backend load balancer, and the database only accepts 5432 from the backend servers. SSH is only allowed from the IP address of the computer running the deploy script.</li>
+        <li><strong>Shared state.</strong> Terraform state is kept in an S3 bucket, so my laptop and GitHub Actions work from the same state. Without it, the pipeline wouldn’t know the servers already exist and would try to build them again.</li>
+        <li><strong>Configuration.</strong> An Ansible playbook installs Docker on every server and starts the right container on each one with the <code>community.docker.docker_container</code> module. The frontends use the backend load balancer’s address as their backend URL, and the backends reach the database on its private IP, so that traffic stays inside the VPC.</li>
+        <li><strong>One-command deploy.</strong> A Bash script (<code>deploy.sh</code>, with <code>set -e</code> so it stops on any error) creates the SSH key and S3 bucket if they’re missing, runs Terraform, writes the Ansible inventory from the Terraform outputs, waits for each server to accept SSH, then runs the playbook. Running it again is safe, because Terraform and Ansible only change what is different.</li>
+        <li><strong>Automation.</strong> A GitHub Actions workflow runs the same script on every push to <code>main</code> (or manually). It uses six repository secrets: three for AWS, the SSH key pair and the database password.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Result</h2>
+      <p>The full environment deploys from a single workflow run, and all 13 deployment runs passed. The site loads through the frontend load balancer, and opening a frontend server’s IP directly on port 8081 times out, which shows requests can only arrive through the load balancer. No AWS keys are stored in the code.</p>
+    </section>
+
+    <section>
+      <h2>A problem I had to fix</h2>
+      <p>After I pointed the frontends at the internal load balancer, both status checks on the site failed. The backend servers’ security group still only allowed traffic from the frontend servers, not from the new load balancer, so its health checks were blocked. I changed the rule to allow the backend load balancer’s security group instead, and the checks went green again about a minute later.</p>
+    </section>
+
+    <section>
+      <h2>Security review of my own work</h2>
+      <p>After finishing, I reviewed the code the way an attacker or auditor would. These are the weaknesses I found and how I’d fix them in a production setup.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Issue</th><th>Risk</th><th>Fix</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>The Terraform variable for SSH defaults to <code>0.0.0.0/0</code>. My deploy script narrows it to my own IP, but running Terraform on its own would not.</td>
+              <td>Anyone on the internet could try to log in, which invites brute-force attempts.</td>
+              <td>Remove the default so Terraform refuses to run without an IP range, or remove SSH and use AWS Systems Manager Session Manager.</td>
+            </tr>
+            <tr>
+              <td>All five servers sit in public subnets with public IP addresses (Ansible connects to them over SSH)</td>
+              <td>Only the security groups keep the backend and database off the internet. One wrong rule would expose them.</td>
+              <td>Move the backend and database into private subnets with a NAT gateway, and reach them through a bastion host or Session Manager.</td>
+            </tr>
+            <tr>
+              <td>Only one database server</td>
+              <td>The frontend and backend survive losing a zone, but the database doesn’t.</td>
+              <td>Use a managed database such as Amazon RDS with a standby in a second zone.</td>
+            </tr>
+            <tr>
+              <td>Database password written in <code>docker-compose.yml</code> (from the starter code, used for running locally, not in the AWS deployment)</td>
+              <td>Anyone who can read the repository can read the password, and copied config often ends up in production.</td>
+              <td>Pass it in from GitHub Secrets or AWS SSM Parameter Store at deploy time.</td>
+            </tr>
+            <tr>
+              <td>Deploy script falls back to a test password (<code>local-test-password</code>) if <code>DB_PASSWORD</code> isn’t set</td>
+              <td>A missing secret silently becomes a known, weak password.</td>
+              <td>Make the script stop with an error if the password isn’t set.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>What I learned</h2>
+      <ul>
+        <li>Security groups that reference each other are a simple, strong way to control which servers can talk, but adding a load balancer means updating them, as my health-check problem showed.</li>
+        <li>Moving secrets out of the code is only half the job. Defaults and fallbacks can quietly undo it.</li>
+        <li>Remote state matters as soon as more than one place runs Terraform, including CI.</li>
+        <li>Reviewing my own work afterwards found problems that “it deploys and works” didn’t show.</li>
+      </ul>
+    </section>
+
+    <p class="note">The source code is private because it is assessed university work.</p>
+
+    <footer><a href="index.html">Back to all projects</a></footer>
+  </article>
+</body>
+</html>

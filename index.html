@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ahasanul Haque – Cybersecurity</title>
+  <meta name="description" content="Ahasanul Haque, cybersecurity student at RMIT University, Melbourne. Digital forensics, cloud security and SOC projects.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+
+    <!-- ===== LEFT COLUMN ===== -->
+    <aside class="side">
+      <h1>Ahasanul Haque</h1>
+      <p class="role">Cybersecurity student, RMIT University</p>
+      <p class="bio">Second-year Bachelor of IT (Cybersecurity) student in Melbourne, looking for junior SOC analyst and security internship roles. I work mostly in digital forensics, cloud security and cryptography.</p>
+
+      <a class="button" href="resume.pdf">Download resume</a>
+
+      <nav>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#training">Training</a>
+        <a href="#experience">Experience</a>
+        <a href="#skills">Skills</a>
+      </nav>
+
+      <div class="contact">
+        <a href="mailto:aahasanulhaque5@gmail.com">aahasanulhaque5@gmail.com</a>
+        <a href="https://www.linkedin.com/in/mdahasanulhaque/">LinkedIn</a>
+        <a href="https://github.com/MDAHASANULHAQUE">GitHub</a>
+      </div>
+    </aside>
+
+    <!-- ===== RIGHT COLUMN ===== -->
+    <main>
+
+      <section id="about">
+        <h2>About</h2>
+        <p>I’m studying cybersecurity at RMIT and expect to graduate in 2027. Most of what I know comes from hands-on work: analysing memory dumps and packet captures, investigating web server logs, and deploying apps to AWS with security in mind.</p>
+        <p>I’m working towards a SOC Analyst role and doing the TryHackMe SOC Level 1 path alongside my degree. Longer term, I’m interested in cloud security and governance, risk and compliance.</p>
+      </section>
+
+      <section id="projects">
+        <h2>Selected projects</h2>
+
+        <div class="entry">
+          <div class="when">2026<br>Coursework</div>
+          <div>
+            <h3><a href="aws-deployment.html">Secure multi-tier deployment on AWS</a></h3>
+            <p class="sub">Infrastructure as code for a web app with a Postgres database</p>
+            <ul>
+              <li>Built the network and five EC2 instances across two availability zones with Terraform, with state stored in S3.</li>
+              <li>Reviewed my own setup afterwards and documented weaknesses and fixes, including an SSH default of <code>0.0.0.0/0</code> and a fallback database password.</li>
+              <li>Put public and internal load balancers in front of the app, with security groups that only accept traffic through them.</li>
+              <li>Automated deployment with Ansible and GitHub Actions, keeping credentials in GitHub Secrets.</li>
+            </ul>
+            <p class="stack">Terraform, AWS, Ansible, Docker, GitHub Actions, PostgreSQL</p>
+            <a class="more" href="aws-deployment.html">Read the case study</a>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">2026<br>Coursework</div>
+          <div>
+            <h3><a href="memory-forensics.html">Memory forensics on a Windows system</a></h3>
+            <p class="sub">Analysing a Windows memory dump with Volatility 3</p>
+            <p>Installed Volatility 3 from source in Kali Linux and cross-checked pslist, psscan and psxview to look for hidden processes in a Windows memory image, then reviewed handles, DLLs and registry hives.</p>
+            <p class="stack">Volatility 3, Kali Linux</p>
+            <a class="more" href="memory-forensics.html">Read the case study</a>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">2026<br>Coursework</div>
+          <div>
+            <h3><a href="network-forensics.html">Network forensics: DDoS and malware traffic</a></h3>
+            <p class="sub">Two packet capture investigations in Wireshark</p>
+            <p>Identified the attacking host in an HTTP flood, and recovered and verified a disguised file hidden in HTTP traffic.</p>
+            <p class="stack">Wireshark, Kali Linux, xxd, sha256sum, VirusTotal</p>
+            <a class="more" href="network-forensics.html">Read the case study</a>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">2026<br>Team project</div>
+          <div>
+            <h3>Web server log investigation</h3>
+            <p class="sub">Reconstructing an attack from Apache access logs</p>
+            <ul>
+              <li>Filtered and counted log patterns with grep, awk, sort and uniq, and hashed the log to keep its integrity.</li>
+              <li>Traced attacker IPs using Tor relay history (ExoneraTor) and ipinfo.io.</li>
+              <li>Wrote the root cause analysis and mapped the attack to MITRE ATT&amp;CK.</li>
+            </ul>
+            <p class="stack">Bash, Kali Linux, ExoneraTor, MITRE ATT&amp;CK</p>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">Research</div>
+          <div>
+            <h3>Predictability of special characters in passwords</h3>
+            <p class="sub">Independent study, written up as an IEEE-format paper</p>
+            <p>Tested whether Hashcat rules built around where people place special characters crack more RockYou passwords than the standard <i>best66</i> rule set. They didn’t: the custom rules underperformed the baseline, and I reported the negative result.</p>
+            <p class="stack">Hashcat, RockYou dataset</p>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">2026<br>Team project</div>
+          <div>
+            <h3>Applied cryptography in Python</h3>
+            <p class="sub">RSA from scratch, hybrid encryption and steganography</p>
+            <ul>
+              <li>Implemented RSA without a crypto library, including Miller-Rabin prime generation, key generation, encryption and decryption.</li>
+              <li>Built hybrid file encryption: AES-256-GCM for the file, RSA-OAEP to protect the AES key.</li>
+              <li>Hid an AES-encrypted message in a JPEG’s metadata and recovered it.</li>
+            </ul>
+            <p class="stack">Python, PyCryptodome, Pillow</p>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">Personal</div>
+          <div>
+            <h3>Penetration testing lab</h3>
+            <p class="sub">Kali Linux and Metasploitable 2</p>
+            <p>Built a virtual lab to practise attacks safely, and documented the setup and testing method.</p>
+            <p class="stack">Kali Linux, Metasploitable 2</p>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">2026<br>Coursework</div>
+          <div>
+            <h3>CI pipeline for a Node.js app</h3>
+            <p class="sub">Automated testing with GitHub Actions</p>
+            <p>Lint, unit test, build and end-to-end test jobs on every push, using feature branches and pull requests, with Playwright tests against a MongoDB service.</p>
+            <p class="stack">GitHub Actions, Node.js, MongoDB, Jest, Playwright</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="training">
+        <h2>Training</h2>
+
+        <div class="entry">
+          <div class="when">In progress</div>
+          <div>
+            <h3>TryHackMe SOC Level 1 path</h3>
+            <p class="sub">Hands-on security operations training</p>
+            <p>Completed rooms include Cyber Security 101, Linux Fundamentals, and Windows Fundamentals 1 to 3, covering Windows persistence locations, Defender and firewall settings, event logs and BitLocker. I run the labs from my own Kali VM over VPN.</p>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">2026</div>
+          <div>
+            <h3>Forensics lab work, RMIT</h3>
+            <p class="sub">Weekly practical labs</p>
+            <p>Imaged a USB drive with FTK Imager and verified the hashes, and used Autopsy to recover deleted files and spot files whose type didn’t match their extension.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="experience">
+        <h2>Experience</h2>
+
+        <div class="entry">
+          <div class="when">Feb 2026 –<br>present</div>
+          <div>
+            <h3>Web Development Intern (unpaid)</h3>
+            <p class="sub">Ryven.co, Melbourne</p>
+            <ul>
+              <li>Configure and renew SSL/TLS certificates and manage DNS records across client sites on cPanel and VPS servers.</li>
+              <li>Run staging-to-production deployments and pre-launch QA, and write technical handover documentation.</li>
+              <li>Integrate payment gateways, email APIs and analytics, keeping credentials and API keys out of the code.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">Dec 2025 –<br>present</div>
+          <div>
+            <h3>Customer Fulfilment Associate, night shift</h3>
+            <p class="sub">Coles Customer Fulfilment Centre, Truganina</p>
+            <p>Monitor and resolve exceptions in a high-volume automated fulfilment system, and escalate issues to team leads by priority.</p>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="when">Expected<br>2027</div>
+          <div>
+            <h3>Bachelor of Information Technology (Cybersecurity)</h3>
+            <p class="sub">RMIT University, Melbourne</p>
+            <p>Relevant courses: computer and internet forensics, security in computing and IT, systems deployment and operations, cloud foundations, blockchain technology fundamentals, professional ethics.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="skills">
+        <h2>Skills</h2>
+        <dl class="skills">
+          <dt>Forensics</dt>
+          <dd>Volatility 3, Wireshark, Autopsy, FTK Imager, log analysis</dd>
+          <dt>Security</dt>
+          <dd>Kali Linux, Hashcat, VirusTotal, MITRE ATT&amp;CK, Windows security and event logs</dd>
+          <dt>Cloud</dt>
+          <dd>AWS (EC2, VPC, S3, load balancers, Lambda), Terraform, Ansible, Docker</dd>
+          <dt>Development</dt>
+          <dd>Python, Bash, JavaScript, Java, Git, GitHub Actions</dd>
+          <dt>Cryptography</dt>
+          <dd>RSA, AES, hybrid encryption, ElGamal, Paillier</dd>
+        </dl>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>

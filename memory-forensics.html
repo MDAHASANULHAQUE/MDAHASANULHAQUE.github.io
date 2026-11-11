@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>Memory forensics on a Windows system – Ahasanul Haque</title>
+  <meta name="description" content="Case study: analysing a Windows memory dump with Volatility 3 in Kali Linux.">
+</head>
+<body>
+  <article class="case">
+    <a class="back" href="index.html">Back to all projects</a>
+
+    <header>
+      <h1>Memory forensics on a Windows system</h1>
+      <p class="lede">Using Volatility 3 to find out what was running on a Windows machine from a copy of its memory.</p>
+      <dl class="facts">
+        <dt>Type</dt><dd>RMIT coursework (Computer and Internet Forensics)</dd>
+        <dt>Year</dt><dd>2026</dd>
+        <dt>Tools</dt><dd>Volatility 3 (Framework 2.28.2), Kali Linux 2025.2 in VirtualBox</dd>
+      </dl>
+    </header>
+
+    <section>
+      <h2>The problem</h2>
+      <p>Some malware leaves little or nothing on disk and only exists while the computer is running. A memory dump captures that moment. The task was to analyse a Windows memory image and work out which processes were running and which ones deserved a closer look.</p>
+    </section>
+
+    <section>
+      <h2>Objectives</h2>
+      <ul>
+        <li>Set up a working memory forensics toolkit.</li>
+        <li>Identify the system the memory came from.</li>
+        <li>List running processes and find any that were hidden.</li>
+        <li>Check what suspicious processes had open and which DLLs they loaded.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>How I investigated</h2>
+      <ol>
+        <li><strong>Setup.</strong> Installed Volatility 3 from source in a Kali Linux VM in VirtualBox, so the analysis ran in an isolated environment.</li>
+        <li><strong>Identify the system.</strong> Ran <code>windows.info</code> to confirm the Windows version and details of the image before trusting any other output.</li>
+        <li><strong>List processes two ways.</strong> <code>windows.pslist</code> follows Windows’ own list of processes. <code>windows.psscan</code> scans memory for process structures directly. Malware can unlink itself from the first list, so a process found only by psscan is a red flag.</li>
+        <li><strong>Cross-check with psxview.</strong> Ran <code>windows.psxview</code>, which compares several ways of finding processes side by side, to confirm what pslist and psscan showed.</li>
+        <li><strong>Check open handles.</strong> Ran <code>windows.handles</code> with <code>--pid</code> on processes of interest to see which files, registry keys and other objects they were using.</li>
+        <li><strong>Registry and DLLs.</strong> Listed the registry hives in memory with <code>windows.registry.hivelist</code>, and the DLLs a process had loaded with <code>windows.dlllist</code>.</li>
+        <li><strong>Save the evidence.</strong> Used <code>-r csv</code> and redirected the output to a file, so results could be kept and reviewed outside the terminal.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Findings</h2>
+      <p>Comparing the two process lists and reviewing handles narrowed the investigation down to the processes worth reporting on.</p>
+      <p class="note">Specific findings are left out because this was assessed coursework. I’m happy to walk through the method in an interview.</p>
+    </section>
+
+    <section>
+      <h2>Why it matters for a SOC</h2>
+      <p>When an endpoint alert fires, memory analysis can show what was actually running, even if the malware has removed its files. Knowing why pslist and psscan can disagree helps an analyst spot hiding techniques instead of trusting one view of the system.</p>
+    </section>
+
+    <section>
+      <h2>Recommendations</h2>
+      <ul>
+        <li>Capture memory early in an incident, before rebooting or shutting down the machine.</li>
+        <li>Hash the memory image as soon as it’s collected, so its integrity can be proven later.</li>
+        <li>Use endpoint detection tooling that watches process behaviour, not just files on disk.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What I learned</h2>
+      <ul>
+        <li>Building the tool from source taught me more about its dependencies than a ready-made install would have.</li>
+        <li>Always confirm the system profile first. Every later result depends on it.</li>
+        <li>One plugin’s output is a view, not the truth. Cross-checking is what finds hidden activity.</li>
+      </ul>
+    </section>
+
+    <footer><a href="index.html">Back to all projects</a></footer>
+  </article>
+</body>
+</html>
